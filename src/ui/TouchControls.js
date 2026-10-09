@@ -2,7 +2,8 @@
 // 在畫面空白處拖曳 = 移動瞄準鏡
 export function setupTouch({ keys, setAimPx, setFire }) {
   const state = { stick: { x: 0, y: 0 }, enabled: false };
-  const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  // 只有「主要輸入是手指」的裝置 (手機/平板) 才顯示；觸控筆電、桌機不顯示
+  const isTouch = matchMedia('(pointer: coarse) and (hover: none)').matches;
   if (!isTouch) return state;
   state.enabled = true;
   document.body.classList.add('touch');
