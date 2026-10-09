@@ -22,3 +22,21 @@ body.hit #hud{box-shadow:inset 0 0 120px rgba(255,40,80,.6)}
 #loading{position:fixed;inset:0;background:#1d1a15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;letter-spacing:.4em;transition:opacity .6s}
 #loading.hide{opacity:0;pointer-events:none}
 .lb{width:240px;height:3px;background:#444}#load-bar{height:100%;width:0;background:#5fe3f0}
+html,body{touch-action:none;-webkit-user-select:none;-webkit-touch-callout:none}
+#reticle{transition:width .15s,height .15s,border-color .15s;cursor:none}
+body:not(.touch) canvas{cursor:crosshair}
+/* ---- 手機 ---- */
+#touch-ui{position:fixed;inset:0;pointer-events:none;z-index:5}
+#stick{pointer-events:auto;position:absolute;left:calc(28px + env(safe-area-inset-left));bottom:calc(28px + env(safe-area-inset-bottom));width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.12);border:2px solid rgba(110,230,230,.6);backdrop-filter:blur(4px)}
+#knob{position:absolute;left:50%;top:50%;width:60px;height:60px;margin:-30px;border-radius:50%;background:rgba(95,227,240,.55);box-shadow:0 0 18px rgba(95,227,240,.6)}
+#btns{position:absolute;right:calc(20px + env(safe-area-inset-right));bottom:calc(24px + env(safe-area-inset-bottom));width:210px;height:200px}
+#btns button{pointer-events:auto;position:absolute;border-radius:50%;border:2px solid rgba(255,255,255,.6);background:rgba(20,30,40,.35);color:#fff;font:600 12px sans-serif;letter-spacing:.08em;backdrop-filter:blur(4px)}
+#btns button.on{background:rgba(95,227,240,.55)}
+#btns .fire{right:0;bottom:0;width:92px;height:92px;border-color:#ff6a95;background:rgba(255,70,120,.3)}
+#btns .fire.on{background:rgba(255,70,120,.7)}
+#btns .boost{right:104px;bottom:0;width:70px;height:70px}
+#btns .up{right:12px;bottom:104px;width:70px;height:70px}
+#btns .cam{width:48px;height:48px;font-size:20px;bottom:150px}
+#btns .cam:nth-of-type(4){right:150px}#btns .cam:nth-of-type(5){right:92px}
+body.touch .sub{display:none}
+@media (max-width:820px){h1{font-size:22px}.tag{font-size:9px}.spd b{font-size:38px}.bar{width:180px}#reticle{width:110px;height:110px}#reticle.lock{width:90px;height:90px}}

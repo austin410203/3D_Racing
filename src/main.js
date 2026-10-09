@@ -65,8 +65,18 @@ const keys = {};
 addEventListener('keydown', (e) => { keys[e.code] = true; if (e.code === 'Space') e.preventDefault(); });
 addEventListener('keyup', (e) => { keys[e.code] = false; });
 let firing = false;
+import { setupTouch } from './ui/TouchControls.js';
+// 瞄準點 (NDC 座標)；預設在畫面中上方
+const aim = { x: 0, y: 0.2 };
+const setAimPx = (px, py) => {
+  aim.x = THREE.MathUtils.clamp((px / innerWidth) * 2 - 1, -0.95, 0.95);
+  aim.y = THREE.MathUtils.clamp(-(py / innerHeight) * 2 + 1, -0.9, 0.9);
+};
+addEventListener('mousemove', (e) => setAimPx(e.clientX, e.clientY));
 addEventListener('mousedown', (e) => { if (e.button === 0) firing = true; });
 addEventListener('mouseup', (e) => { if (e.button === 0) firing = false; });
+const touch = setupTouch({ keys, setAimPx, setFire: (v) => { firing = v; } });
+const raycaster = new THREE.Raycaster();
 
 // ---------------- HUD ----------------
 const $ = (id) => document.getElementById(id);
@@ -169,8 +179,8 @@ let t = 0;
 function update(dt) {
   t += dt;
   // ---- 控制 ----
-  const throttle = (keys.KeyW ? 1 : 0) - (keys.KeyS ? 1 : 0);
-  const steer = (keys.KeyA ? 1 : 0) - (keys.KeyD ? 1 : 0);
+  const throttle = THREE.MathUtils.clamp((keys.KeyW ? 1 : 0) - (keys.KeyS ? 1 : 0) - touch.stick.y, -1, 1);
+  const steer = THREE.MathUtils.clamp((keys.KeyA ? 1 : 0) - (keys.KeyD ? 1 : 0) - touch.stick.x, -1, 1);
   const boost = (keys.ShiftLeft || keys.ShiftRight) && throttle > 0;
   if (keys.KeyQ) S.camYaw += dt * 2.2;
   if (keys.KeyE) S.camYaw -= dt * 2.2;
@@ -261,20 +271,28 @@ function update(dt) {
   camera.updateProjectionMatrix();
 
   // ---- 射擊 (左鍵 / F / J) ----
-  const aimDir = new THREE.Vector3().subVectors(camLook, camera.position).normalize();
+  raycaster.setFromCamera(new THREE.Vector2(aim.x, aim.y), camera);
+  const aimDir = raycaster.ray.direction.clone();
+  const aimPoint = camera.position.clone().addScaledVector(aimDir, 160);
+  hud.reticle.style.left = `${(aim.x + 1) / 2 * 100}%`;
+  hud.reticle.style.top = `${(1 - aim.y) / 2 * 100}%`;
   let inRange = 0, best = null, bestDot = 0.985;
   for (const e of enemies) {
     if (!e.m.visible) continue;
-    tmp.subVectors(e.pos, S.pos); const d = tmp.length();
-    const dot = tmp.normalize().dot(aimDir);
+    const d = e.pos.distanceTo(S.pos);
+    const dot = tmp.copy(e.pos).setY(e.pos.y + 1).sub(camera.position).normalize().dot(aimDir);
     if (d < 220 && dot > 0.9) inRange++;
     if (d < 260 && dot > bestDot) { bestDot = dot; best = e; }
   }
   S.cooldown -= dt;
   if ((firing || keys.KeyF || keys.KeyJ) && S.cooldown <= 0) {
     S.cooldown = 0.09;
-    const dir = best ? tmp.subVectors(best.pos, S.pos).add(new THREE.Vector3(0, 1, 0)).normalize().clone() : aimDir.clone();
-    origins.forEach((o) => shoot(o.clone().addScaledVector(dir, 2).add(new THREE.Vector3(0, 0.3, 0)), dir, false));
+    const target = best ? best.pos.clone().setY(best.pos.y + 1) : aimPoint;
+    origins.forEach((o) => {
+      const from = o.clone().add(new THREE.Vector3(0, 0.3, 0));
+      const dir = target.clone().sub(from).normalize();
+      shoot(from.addScaledVector(dir, 2), dir, false);
+    });
   }
   hud.reticle.classList.toggle('lock', !!best);
 
