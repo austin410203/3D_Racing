@@ -374,4 +374,4 @@ function loop() {
   requestAnimationFrame(loop);
 }
 loop();
-window.__game = { S, keys };
+window.__game = { S, keys, enemies };

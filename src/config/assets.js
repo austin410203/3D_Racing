@@ -20,8 +20,8 @@ export const ASSETS = {
     ],
   },
   enemy: {
-    url: null, // 例: '/models/enemy_drone.glb'
-    size: 2.4,
+    url: '/models/enemy_drone.glb',
+    size: 3.6,
     rotationY: 0,
     offsetY: 0,
   },
