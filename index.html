@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sand Hunter — 砂の上で、狩る。</title>
+</head>
+<body>
+<div id="app"></div>
+<div id="hud">
+  <div class="tl"><div class="tag">SENA / BATTLE PROTOTYPE</div><h1>砂の上で、狩る。</h1>
+    <div class="sub">WASD 移動 · SHIFT 加速 · SPACE 上昇 · Q/E 視角 (R 重置) · 左鍵 / F 射擊</div></div>
+  <div class="shield"><span>SHIELD</span><div class="bar"><div id="shield-fill"></div></div></div>
+  <div class="tr"><div class="spd"><b id="speed">0</b><small>km/h</small></div>
+    <div id="alt" class="alt"></div><div class="stats">撃破 <b id="kills">0</b></div></div>
+  <div id="reticle"><i></i><span id="range">射程内 0</span></div>
+</div>
+<div id="loading"><div>LOADING</div><div class="lb"><div id="load-bar"></div></div></div>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
