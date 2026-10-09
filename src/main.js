@@ -23,11 +23,11 @@ document.getElementById('app').appendChild(renderer.domElement);
 const scene = new THREE.Scene();
 const FOG = new THREE.Color(0xd8cdb4);
 scene.fog = new THREE.Fog(FOG, 60, 420);
-const camera = new THREE.PerspectiveCamera(68, innerWidth / innerHeight, 0.1, 2000);
+const camera = new THREE.PerspectiveCamera(68, innerWidth / innerHeight, 0.1, 7000);
 
 // 天空
 const sky = new THREE.Mesh(
-  new THREE.SphereGeometry(1500, 32, 16),
+  new THREE.SphereGeometry(5000, 32, 16),
   new THREE.ShaderMaterial({
     side: THREE.BackSide, depthWrite: false, fog: false,
     vertexShader: `varying vec3 vP; void main(){ vP=normalize(position); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
@@ -40,6 +40,7 @@ const sky = new THREE.Mesh(
         gl_FragColor=vec4(c,1.); }`,
   })
 );
+sky.renderOrder = -10;
 scene.add(sky);
 
 scene.add(new THREE.HemisphereLight(0xbfd8ff, 0xc9a26b, 1.1));
@@ -88,6 +89,30 @@ $('loading').classList.add('hide');
 
 const terrain = new Terrain(scene);
 
+// ---- 天空要塞 (可替換模型) ----
+const fortress = createModel('fortress');
+fortress.position.set(0, ASSETS.fortress.altitude, 0);
+fortress.traverse((o) => {
+  if (!o.isMesh) return;
+  o.castShadow = o.receiveShadow = false;   // 太大，不參與陰影
+  o.frustumCulled = false;
+  const mats = Array.isArray(o.material) ? o.material : [o.material];
+  mats.forEach((m) => { m.fog = false; });  // 不被霧吞掉，遠處也看得到
+});
+scene.add(fortress);
+// 要塞下方的雲海環
+const cloudMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55, depthWrite: false, fog: false });
+const cloudRing = new THREE.Group();
+for (let i = 0; i < 40; i++) {
+  const a = (i / 40) * Math.PI * 2, r = 230 + Math.random() * 90;
+  const c = new THREE.Mesh(new THREE.SphereGeometry(30 + Math.random() * 35, 12, 8), cloudMat);
+  c.scale.y = 0.35;
+  c.position.set(Math.cos(a) * r, -10 + Math.random() * 30, Math.sin(a) * r);
+  cloudRing.add(c);
+}
+cloudRing.position.copy(fortress.position);
+scene.add(cloudRing);
+
 // ---- 場景物件 (可替換模型) ：環繞玩家無限重複 ----
 const WRAP = 1600;
 const props = [];
@@ -126,11 +151,12 @@ const flameLight = new THREE.PointLight(0xc8b8ff, 0, 12);
 scene.add(flameLight);
 
 const S = {
-  pos: new THREE.Vector3(0, heightAt(0, 0) + 2, 0),
+  pos: new THREE.Vector3(0, heightAt(0, 1400) + 2, 1400), // 從遠處朝要塞出發
   vel: new THREE.Vector3(),
   yaw: 0, bank: 0, pitch: 0,
   camYaw: 0, shield: 1, kills: 0, cooldown: 0, power: 0,
 };
+camera.position.set(S.pos.x, S.pos.y + 2.2, S.pos.z + 5.2); // 開場直接在玩家身後
 const HOVER = 1.1, MAX = 52, BOOST = 82; // m/s  (≈ 190 / 295 km/h)
 
 // ---- 子彈 ----
@@ -358,6 +384,9 @@ function update(dt) {
   sun.position.set(S.pos.x + 60, S.pos.y + 100, S.pos.z + 40);
   sun.target.position.copy(S.pos);
   sky.position.copy(camera.position);
+  fortress.rotation.y += dt * 0.01;
+  fortress.position.y = ASSETS.fortress.altitude + Math.sin(t * 0.25) * 6;
+  cloudRing.rotation.y -= dt * 0.02;
 
   // ---- HUD ----
   hud.speed.textContent = Math.round(Math.hypot(S.vel.x, S.vel.z) * 3.6);
@@ -374,4 +403,4 @@ function loop() {
   requestAnimationFrame(loop);
 }
 loop();
-window.__game = { S, keys, enemies };
+window.__game = { S, keys, enemies, fortress, camera };

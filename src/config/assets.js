@@ -25,6 +25,14 @@ export const ASSETS = {
     rotationY: 0,
     offsetY: 0,
   },
+  // 天空要塞：放在世界中心 (0,0) 正上方高空
+  fortress: {
+    url: '/models/sky_fortress.glb',
+    size: 520,          // 最長邊 (公尺)
+    rotationY: 0,
+    offsetY: 0,
+    altitude: 200,      // 要塞底部離地高度
+  },
   rockArch: { url: null, size: 30, rotationY: 0, offsetY: 0 },
   rockPillar: { url: null, size: 14, rotationY: 0, offsetY: 0 },
   ruin: { url: null, size: 12, rotationY: 0, offsetY: 0 },
